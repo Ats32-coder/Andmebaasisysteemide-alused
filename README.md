@@ -1,2 +1,1 @@
 # Andmebaasisysteemide-alused
-TARge25
