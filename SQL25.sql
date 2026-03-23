@@ -436,3 +436,81 @@ select PM.Name as ProductModel, P.Name as Product
 from SalesLT.Product P
 left join SalesLT.ProductModel PM
 on PM.ProductModelId = P.ProductModelId
+
+
+---JOIN päringud
+---CROSS JOIN
+---Loob ühendused kahest tabelist. Employee tabelis on kümme rida ja Departments tabelis neli rida.
+---See tingimus tekitab päringu, mis kuvab 40 rida. Sellel JOIN-l ei tohiks olla ON tingimust.
+select Name, Gender, Salary, DepartmentName
+FROM dbo.Employees
+CROSS JOIN dbo.Department
+
+---JOIN VÕI INNER JOIN
+---INNER JOIN tagastab ainult kahes tabelis olevate ridade tabelid. Mitte kattuvad read on eemaldatud.
+select Name, Gender, Salary, DepartmentName
+from dbo.Employees
+INNER JOIN dbo.Department
+ON dbo.Employees.DepartmentId = dbo.Department.Id
+
+---LEFT VÕI LEFT OUTER JOIN
+---OUTER märksõna on vabatahtlik
+Select Name, Gender, Salary, DepartmentName
+from dbo.Employees
+LEFT OUTER JOIN dbo.Department
+ON dbo.Employees.DepartmentId = dbo.Department.Id
+
+---RIGHT JOIN või RIGHT OUTER JOIN
+select Name, Gender, Salary, DepartmentName
+from dbo.Employees
+RIGHT JOIN dbo.Department
+ON dbo.Employees.DepartmentId = dbo.Department.Id
+
+---FULL JOIN või FULL OUTER JOIN
+select Name, Gender, Salary, DepartmentName
+from dbo.Employees
+FULL JOIN dbo.Department
+ON dbo.Employees.DepartmentId = dbo.Department.Id
+
+---CROSS JOIN: tagastab kõik omavahel olevad read
+--- JOIN: Tagastab kattuvad read ja kõik mitte-kattuvad read vasakust tabelist
+---RIGHT JOIN: Tagastab kõik kattuvad read ja kõik mitte-kaatuvad read paremast tabelist
+---FULL JOIN: Tagastab vasakust ja paremast tabelist ja kõik mitte kattuvad read
+
+---Keerulisemad JOIN-d
+Select Name, Gender, Salary, DepartmentName
+from dbo.Employees E
+LEFT JOIN dbo.Department D
+ON E.DepartmentId = D.Id
+
+---Kuidas saada andmeid mitte-kattuvatelt ridadelt paremast tabelist.
+Select Name, Gender, Salary, DepartmentName
+from dbo.Employees E
+RIGHT JOIN dbo.Department D
+ON E.DepartmentId = D.Id
+WHERE E.DepartmentId IS NULL
+
+---Kuidas saada mõlemast tabelist ainult mitte-kattuvad read. 
+Select Name, Gender, Salary, DepartmentName
+from dbo.Employees E
+FULL JOIN dbo.Department D
+ON e.DepartmentId = D.Id
+WHERE E.DepartmentId IS NULL
+OR D.Id IS NULL
+
+---SELF JOIN
+---Tabeli iseendaga ühendamist nimetatakse SELF JOIN-ks. 
+Select E.Name as Employee, M.Name as Manager
+from dbo.Employees E
+LEFT JOIN dbo.Employees M
+ON E.ManagerId = M.Id
+
+---INNER Self ja CROSS self koodinäide
+Select E.Name as Employee, M.Name as Manager
+from dbo.Employees E
+INNER JOIN dbo.Employees M
+ON E.ManagerId = M.Id
+
+Select E.Name as Employee, M.Name as Manager
+from dbo.Employees E
+CROSS JOIN dbo.Employees M
