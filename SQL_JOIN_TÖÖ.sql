@@ -1,36 +1,36 @@
 ---CROSS JOIN
 ---Tagastab kõik omavahel olevad read
-SELECT DepartmentGroupName, Firstname, Lastname
-FROM dbo.DimDepartmentGroup
-CROSS JOIN dbo.DimEmployee
+SELECT c.FirstName, p.EnglishProductName
+FROM DimCustomer c
+CROSS JOIN DimProduct p
 
 ---INNER JOIN
 ---Tagastab ainult kahes tabelis olevate ridade tabelid. Mitte kattuvad read on eemaldatud.
-SELECT ProductKey, ProductAlternateKey, EnglishProductName
-FROM dbo.DimProduct
-INNER JOIN dbo.DimProductCategory
-ON dbo.DimProduct.ProductKey = dbo.DimProductCategory.ProductCategoryKey
+SELECT c.FirstName, c.LastName, s.SalesAmount
+FROM FactInternetSales s
+INNER JOIN DimCustomer c
+ON s.CustomerKey = c.CustomerKey
 
 ---LEFT JOIN
 ---Tagastab kattuvad read ja kõik mitte-kattuvad read vasakust tabelist
-SELECT SalesReasonName, SalesReasonReasonType, SalesTerritoryRegion
-FROM dbo.DimSalesReason
-LEFT JOIN dbo.DimSalesTerritory
-ON dbo.DimSalesReason.SalesReasonKey = dbo.DimSalesTerritory.SalesTerritoryKey
+SELECT c.FirstName, c.LastName, s.SalesAmount
+FROM DimCustomer c
+LEFT JOIN FactInternetSales s
+ON c.CustomerKey = s.CustomerKey
 
 ---RIGHT JOIN
 ---Tagastab kõik kattuvad read ja kõik mitte-kaatuvad read paremast tabelist
-SELECT AccountDescription, AccountType, CurrencyAlternateKey
-FROM dbo.DimAccount
-RIGHT JOIN dbo.DimCurrency
-ON dbo.DimAccount.AccountKey = dbo.DimCurrency.CurrencyKey
+SELECT p.EnglishProductName, s.SalesAmount
+FROM FactInternetSales s
+RIGHT JOIN DimProduct p
+ON s.ProductKey = p.ProductKey
 
 ---FULL JOIN
 ---Tagastab vasakust ja paremast tabelist ja kõik mitte kattuvad read
-SELECT City, StateProvinceCode, StateProvinceName, OrganizationName
-FROM dbo.DimGeography
-FULL JOIN dbo.DimOrganization
-ON dbo.DimGeography.GeographyKey = dbo.DimOrganization.OrganizationKey
+SELECT c.FirstName, c.LastName, s.SalesAmount
+FROM DimCustomer c
+FULL OUTER JOIN FactInternetSales s
+ON c.CustomerKey = s.CustomerKey
 
 ---TABLE
 CREATE TABLE School
