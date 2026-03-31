@@ -609,6 +609,141 @@ SELECT * from UKCustomers
 
 --kasutate union all
 --kahe tabeli andmete vaatamiseks
-SELECT Name, Email FROM IndianCustomers
+--näitab kõik read mõlemast tabelist
+SELECT Id, Name, Email FROM IndianCustomers
 UNION ALL
-SELECT Name, Email FROM UKCustomers
+SELECT Id, Name, Email FROM UKCustomers
+
+--korduvate väärtuste eemaldamiseks kasutame unionit
+SELECT Id, Name, Email FROM IndianCustomers
+UNION
+SELECT Id, Name, Email FROM UKCustomers
+
+--kuidas tulemust sorteerida nime järgi
+--kasutada union all-i
+SELECT Id, Name, Email FROM IndianCustomers
+UNION ALL
+SELECT Id, Name, Email FROM UKCustomers
+ORDER BY Name
+
+--stored procedure
+--salvestatud protseduurid on SQL-i koodid, mis on salvestatud
+--andmebaasis ja mida saab käivitada,
+--et teha mingi kindel töö ära
+create procedure spGetEmployees
+as begin
+	select FirstName, Gender from Employees
+end
+
+--nüüd saame kasutada spGetEmployees-i
+spGetEmployees
+exec spGetEmployees
+execute spGetEmployees
+
+--
+create proc spGetEmployeesByGenderAndDepartment
+@Gender nvarchar(10),
+@DepartmentId int
+as begin
+	select FirstName, Gender, DepartmentId from Employees 
+	where Gender = @Gender and DepartmentId = @DepartmentId 
+end
+
+--miks annab veateate
+spGetEmployeesByGenderAndDepartment
+--õige variant
+exec spGetEmployeesByGenderAndDepartment 'Male', 1
+--kuidas minna sp järjekorrast mööda
+exec spGetEmployeesByGenderAndDepartment @DepartmentId = 1, @Gender = 'Male'
+
+sp_helptext spGetEmployeesByGenderAndDepartment
+
+--muudame sp-d ja võti peale, et keegi teine peale teie ei saaks seda muuta
+alter proc spGetEmployeesByGenderAndDepartment
+@Gender nvarchar(10),
+@DepartmentId int
+with encryption --paneb võtme peale
+as begin
+	select FirstName, Gender, DepartmentId from Employees
+	where Gender = @Gender and DepartmentId = @DepartmentId
+end
+
+--
+create proc spGetEmployeeCountByGender
+@Gender nvarchar(10),
+--output on parameeter, mis võimaldab meil salvestada protseduuri
+--sees tehtud arvutuse tulemuse ja kasutada seda väljaspool protseduuri
+@EmployeeCount int output
+as begin
+	select @EmployeeCount = count(id) from Employees
+	where Gender = @Gender
+end
+
+--annab tulemuse, kus loendab ära vastavad read
+--prindib tulemuse, mis on parameetris @EmployeeCount
+declare @TotalCount int
+exec spGetEmployeeCountByGender 'Male', @TotalCount out
+if(@TotalCount = 0)
+	print '@TotalCount is null'
+else
+	print '@TotalCount is not null'
+print @TotalCount
+
+--näitab ära, et mitu rida vastab nõuetele
+declare @TotalCount int
+exec spGetEmployeeCountByGender @EmployeeCount = @TotalCount out, @Gender = 'Male'
+print @TotalCount
+
+--sp sisu vaatamine
+sp_help spGetEmployeeCountByGender
+--tabeli info
+sp_help Employees
+--kui soovid sp teksti näha
+sp_helptext spGetEmployeeCountByGender
+
+--vaatame, millest sõltub see sp
+sp_depends spGetEmployeeCountByGender
+--vaatame tabelit sp_depends-ga
+sp_depends Employees
+
+---
+create proc spGetNameById
+@Id int,
+@Name nvarchar(30) output
+as begin
+	select @Id = Id, @Name = FirstName from Employees
+end
+
+--tahame näha kogu tabelite ridade arvu
+--count kasutada
+create proc spTotalCount2
+@TotalCount int output
+as begin
+	select @TotalCount = count(Id) from Employees
+end
+
+--saame teada, et mitu rida on tabelis
+declare @TotalEmployees int
+execute spTotalCount2 @TotalEmployees output
+select @TotalEmployees
+
+--mis id all on keegi nime järgi
+create proc spGetIdByName1
+@Id int,
+@FirstName nvarchar(30) output
+as begin
+	select @FirstName = FirstName from Employees where @Id = Id
+end
+
+--annab tulemuse, kus id 1 real on keegi koos nimega 
+declare @FirstName nvarchar(30)
+exec spGetIdByName1 9, @FirstName output
+print 'Name of the employee = ' + @FirstName
+
+---ei anna tulemust, sest sp-s on loogika viga
+/* sp-s on viga sest @id on peremeeter, mis on mõeldud selleks, et me saaksime sisestada id-d
+ja saada nime- aga sp-s on loogika viga, sest see üritab määrata @Id väärtuseks Id veeru väärtust,
+mis on vale */
+declare @FirstName nvarchar(30)
+exec spGetNameById 1, @FirstName output
+print 'Name of the employee = ' + @FirstName
