@@ -514,3 +514,68 @@ ON E.ManagerId = M.Id
 Select E.Name as Employee, M.Name as Manager
 from dbo.Employees E
 CROSS JOIN dbo.Employees M
+
+--
+select isnull('Sinu Nimi', 'No Manager') as Manager
+
+select COALESCE(null, 'No Manager') as Manager
+
+--neil kellel ei ole ülemust, siis paneb neile No Manager teksti
+Select E.Name as Employee, isnull(M.Name, 'No Manager') as Manager
+from Employees E
+left join Employees M
+on E.ManagerId = M.Id
+
+--kui Expression on õige, siis paneb väärtuse, mida soovid või
+--vastasel juhul paneb No Manager teksti
+--case when Expression Then '' else '' end
+
+--teeme päringu, kus kasutame case-i
+--tuleb kasutada ka left join
+Select E.Name as Employee, case when M.Name is null then 'No Manager'
+else M.Name end as Manager
+from Employees E
+left join Employees M
+on E.ManagerId = M.Id
+
+--lisame tabelisse uued veerud
+alter table employees
+add MiddleName nvarchar(30)
+alter table employees
+add LastName nvarchar(30)
+
+--muudame veeru nime koodiga
+sp_rename 'Employees.MiddleName', 'Middlename1'
+select * from Employees
+
+--
+UPDATE Employees
+SET MiddleName = 'Nick', LastName = 'Jones'
+WHERE Id = 1
+UPDATE Employees
+SET LastName = 'Anderson'
+WHERE Id = 2
+UPDATE Employees
+SET LastName = 'Smith'
+WHERE Id = 4
+UPDATE Employees
+SET FirstName = NULL, Middlename = 'Todd', LastName = 'Someone'
+WHERE Id = 5
+UPDATE Employees
+SET MiddleName = 'Ten', LastName = 'Sven'
+WHERE Id = 6
+UPDATE Employees
+SET LastName = 'Connor'
+WHERE Id = 7
+UPDATE Employees
+SET MiddleName = 'Balerine'
+WHERE Id = 8
+UPDATE Employees
+SET MiddleName = '007', LastName = 'Bond'
+WHERE Id = 9
+UPDATE Employees
+SET FirstName = NULL, LastName = 'Crowe'
+WHERE Id = 10
+
+--igast reast võtab esimesena mitte nulli väärtuse ja paneb selle Name veergu
+--kasutada coalsece
